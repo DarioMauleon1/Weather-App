@@ -212,6 +212,7 @@ function mqHandler(e) {
 mqLarge.addEventListener("change", mqHandler);
 
 d.addEventListener("DOMContentLoaded", (e) => {
+  toggleLoader(true);
   const start = () => {
     if (!navigator.geolocation) {
       return Promise.reject("Error al obtener permisos de localización");
@@ -223,7 +224,6 @@ d.addEventListener("DOMContentLoaded", (e) => {
             lon: position.coords.longitude,
             lat: position.coords.latitude,
           };
-          toggleLoader(true);
           resolve(location);
         },
         (err) => {
@@ -238,6 +238,7 @@ d.addEventListener("DOMContentLoaded", (e) => {
 });
 
 const handleSearch = () => {
+  toggleLoader(true);
   let inputValue = d.querySelector(`.input-search input`).value;
   if (inputValue !== "") {
     getData(undefined, inputValue);
