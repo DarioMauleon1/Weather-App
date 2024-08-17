@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>App Weather</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Jersey+15&family=Shadows+Into+Light&family=Zeyada&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="shortcut icon" href="./assets/icon.png" type="image/x-icon" />
+  </head>
+  <body>
+    <div id="loader" class="loader hidden">
+      <img src="./assets/ripples.svg" alt="Loading..." />
+    </div>
+    <section class="mobile-weather"></section>
+    <section class="desktop-weather"></section>
+
+    <template id="template-input-search">
+      <div class="input-search-content">
+        <div class="input-search">
+          <input
+            type="search"
+            placeholder="Buscar localidad..."
+            title="Localidad invalida"
+            required
+          />
+          <span class="input-search-error none">Localidad No Encontrada</span>
+        </div>
+        <div class="btn-search-content">
+          <a class="btn-search"><img src="./assets/search.svg" alt="" /> </a>
+        </div>
+      </div>
+    </template>
+
+    <template id="template-main-weather">
+      <div class="weather-date text-center">
+        <h1></h1>
+        <small></small>
+      </div>
+      <img class="main-image" />
+      <div class="weather-data text-center">
+        <div class="degrees">
+          <h1 class="degrees-now"></h1>
+          <p class="min-max"></p>
+        </div>
+        <div class="location">
+          <p class="city"></p>
+          <img src="./assets/location.svg" alt="" />
+        </div>
+      </div>
+    </template>
+
+    <template id="template-next-wheather">
+      <div>
+        <img />
+        <p class="day"></p>
+        <small class="degrees"></small>
+      </div>
+    </template>
+
+    <template id="template-info-weather">
+      <div class="information-weather">
+        <table>
+          <tr class="name">
+            <td>Ubicación</td>
+            <td></td>
+          </tr>
+          <tr class="temp">
+            <td>Temperatura</td>
+            <td>28°C</td>
+          </tr>
+          <tr class="humidity">
+            <td>Humedad</td>
+            <td>30%</td>
+          </tr>
+          <tr class="wind-speed">
+            <td>Velocidad del Viento</td>
+            <td>3.09 km/h</td>
+          </tr>
+        </table>
+      </div>
+    </template>
+
+    <script type="module" src="./main.js"></script>
+  </body>
+</html>
