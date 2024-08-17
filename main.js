@@ -162,7 +162,6 @@ const createMainWeatherElement = (data) => {
 };
 
 function mqHandler(e) {
-  toggleLoader(true);
   try {
     if (e.matches) {
       console.log("desktop");
@@ -224,6 +223,7 @@ d.addEventListener("DOMContentLoaded", (e) => {
             lon: position.coords.longitude,
             lat: position.coords.latitude,
           };
+          toggleLoader(true);
           resolve(location);
         },
         (err) => {
