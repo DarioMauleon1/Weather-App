@@ -27,7 +27,7 @@
 }
 
 body {
-  font-family: var(--font, sans-serif);
+  font-family: sans-serif;
   background: linear-gradient(180deg, #939fa5, #5e7a88);
   color: var(--white-color);
   min-height: inherit;
@@ -62,7 +62,7 @@ p {
 .input-search-content {
   display: flex;
   align-items: center;
-  width: 80%;
+  width: 90%;
 }
 
 .input-search {
