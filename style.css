@@ -27,7 +27,7 @@
 }
 
 body {
-  font-family: sans-serif;
+  font-family: var(--font);
   background: linear-gradient(180deg, #939fa5, #5e7a88);
   color: var(--white-color);
   min-height: inherit;
@@ -104,9 +104,6 @@ p {
   animation: show-message 1s 1 normal 0s ease-out both;
 }
 
-.none {
-  display: none;
-}
 .btn-search-content {
   text-align: center;
 }
@@ -164,6 +161,10 @@ p {
 }
 
 @media screen and (min-width: 700px) {
+  .mobile-weather {
+    display: none;
+  }
+
   body {
     height: 100vh;
     display: flex;
@@ -183,7 +184,6 @@ p {
     justify-items: center;
     align-items: center;
     grid-template-columns: repeat(2, minmax(300px, 600px));
-
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); /* Añade una sombra suave para darle más profundidad */
     backdrop-filter: blur(10px);
   }

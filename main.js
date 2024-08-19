@@ -1,6 +1,6 @@
 import { DateTime } from "https://cdn.jsdelivr.net/npm/luxon@3.0.1/build/es6/luxon.js";
 const d = document;
-const apiKey = `52e15649f4f849388022ebdf377a9d10`;
+const apiKey = `W4W57WFQEUDV4P66AYDG35K48`;
 let url = "";
 const $loader = d.getElementById("loader");
 const $mobileWeather = d.querySelector(".mobile-weather");
@@ -13,29 +13,44 @@ const $templateNextWheather = d.getElementById(
 const $templateInfoWeather = d.getElementById("template-info-weather").content;
 const mqLarge = window.matchMedia("(min-width: 700px)");
 let data = {};
+let locationName = null;
 
 const getData = async (location, city) => {
   if (location !== undefined && city === undefined) {
     let res = await fetch(
-      `https://api.weatherbit.io/v2.0/forecast/daily?lat=${location.lat}&lon=${location.lon}&days=5&key=${apiKey}`
+      `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${location.lat},${location.lon}/next4days?key=${apiKey}&include=days&unitGroup=metric`
     );
     data = await res.json();
+    let resAddress = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?lat=${location.lat}&lon=${location.lon}&format=json`
+    );
+    let dataAddress = await resAddress.json();
+    console.log(dataAddress);
+    locationName =
+      (await dataAddress.address.city) === ""
+        ? ""
+        : ` ${dataAddress.address.city}, ${dataAddress.address.state}`;
+    console.log(data);
     mqHandler(mqLarge);
   }
   if (city !== undefined && location === undefined) {
     try {
       let res = await fetch(
-        `https://api.weatherbit.io/v2.0/forecast/daily?city=${city}&days=5&key=${apiKey}`
+        `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${city}/next4days?key=${apiKey}&include=days&unitGroup=metric`
       );
       if (!res.ok) throw { status: res.status, statusText: res.statusText };
       data = await res.json();
+      console.log(data);
+      locationName = await data.resolvedAddress;
       mqHandler(mqLarge);
     } catch (err) {
       let message = err.statusText || "Ocurrió un error";
       console.log(message);
       let $span = d.querySelector(".input-search-error");
       $span.classList.add("is-active");
-      setInterval(() => $span.classList.remove("is-active"), 4000);
+      setInterval(() => $span.classList.remove("is-active"), 6000);
+    } finally {
+      toggleLoader(false);
     }
   }
 };
@@ -45,18 +60,12 @@ const toggleLoader = (show) => {
 };
 
 const getDate = (timezone) => {
-  let date = DateTime.now().setZone(timezone);
-  const fullDate = date.toLocaleString({
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  });
-  let dayDate = date.toLocaleString({ weekday: "long" });
-  dayDate = dayDate.charAt(0).toUpperCase() + dayDate.slice(1);
-  return {
-    fullDate,
-    dayDate,
-  };
+  const date = DateTime.now().setZone(timezone).setLocale("es");
+  const fullDate = date.toLocaleString(DateTime.DATE_FULL);
+  let dayDate = `${date.toFormat("cccc")[0].toUpperCase()}${date
+    .toFormat("cccc")
+    .slice(1)}`;
+  return { fullDate, dayDate };
 };
 
 const isDay = () => {
@@ -65,25 +74,33 @@ const isDay = () => {
 };
 
 const getIcon = (code) => {
-  switch (true) {
-    case code >= 200 && code <= 233:
+  switch (code) {
+    case "thunder-rain":
+    case "thunder-showers-day":
+    case "thunder-showers-night":
       return "./assets/thunder.svg";
-    case code >= 300 && code <= 302:
-      return "./assets/rainy-5.svg";
-    case code >= 500 && code <= 522:
+    case "rain":
+    case "showers-day":
+    case "showers-night":
       return "./assets/rainy-6.svg";
-    case code >= 600 && code <= 623:
+    case "snow":
+    case "snow-showers-day":
+    case "snow-showers-night":
       return "./assets/snowy-6.svg";
-    case code >= 700 && code <= 751:
-      return "./assets/cloudy-static.svg";
-    case code >= 801 && code <= 900:
-      return isDay()
-        ? "./assets/cloudy-day-2.svg"
-        : "./assets/cloudy-night-2.svg";
-    case code === 800:
-      return isDay() ? "./assets/day.svg" : "./assets/night.svg";
+    case "cloudy":
+    case "wind":
+    case "fog":
+      return "./assets/cloudy.svg";
+    case "partly-cloudy-day":
+      return "./assets/cloudy-day-2.svg";
+    case "partly-cloudy-night":
+      return "./assets/cloudy-night-2.svg";
+    case "clear-day":
+      return "./assets/day.svg";
+    case "clear-night":
+      return "./assets/night.svg";
     default:
-      console.log("Unknown code");
+      return "./assets/cloudy-static.svg";
   }
 };
 
@@ -95,23 +112,24 @@ const createSearchElement = () => {
 
 const createWidgetElement = (data) => {
   let $fragment = d.createDocumentFragment();
-  const weekdays = data.data.filter((_, index) => index !== 0);
+  let weekdays = data.days.filter((_, index) => index !== 0);
   let article = d.createElement(`article`);
+
   article.classList.add("next-weather");
   weekdays.forEach((el) => {
-    let dayDate = new Date(`${el.valid_date}T00:00:00`).toLocaleDateString(
-      "es-ES",
-      {
-        weekday: "long",
-      }
-    );
-    dayDate = dayDate.charAt(0).toUpperCase() + dayDate.slice(1, 3);
+    let dayDate = DateTime.fromISO(el.datetime, {
+      zone: data.timezone,
+      locale: "es",
+    });
+    dayDate =
+      dayDate.toFormat("cccc").slice(0, 3).charAt(0).toUpperCase() +
+      dayDate.toFormat("cccc").slice(1, 3);
 
-    $templateNextWheather.querySelector("img").src = getIcon(el.weather.code);
+    $templateNextWheather.querySelector("img").src = getIcon(el.icon);
     $templateNextWheather.querySelector(".day").innerHTML = dayDate;
     $templateNextWheather.querySelector(".degrees").innerHTML = `${parseInt(
-      el.max_temp
-    )}°C / ${parseInt(el.min_temp)}°C`;
+      el.tempmax
+    )}°C / ${parseInt(el.tempmin)}°C`;
 
     let $clone = d.importNode($templateNextWheather, true);
     article.appendChild($clone);
@@ -121,42 +139,40 @@ const createWidgetElement = (data) => {
 };
 
 const createMoreInfoElement = (data) => {
-  let weatherToday = data.data[0];
+  const weatherToday = data.days[0];
   let fragment = d.createDocumentFragment();
   $templateInfoWeather.querySelector(".name :nth-child(2)").textContent =
-    data.city_name;
+    locationName;
   $templateInfoWeather.querySelector(
     ".temp :nth-child(2)"
   ).textContent = `${parseInt(weatherToday.temp)}°C`;
   $templateInfoWeather.querySelector(
     ".humidity :nth-child(2)"
-  ).textContent = `${weatherToday.rh}%`;
+  ).textContent = `${weatherToday.humidity}%`;
   $templateInfoWeather.querySelector(
     ".wind-speed :nth-child(2)"
-  ).textContent = `${weatherToday.wind_spd} Km/h`;
+  ).textContent = `${weatherToday.windspeed} Km/h`;
 
   fragment.appendChild($templateInfoWeather.cloneNode(true));
   return fragment;
 };
 
 const createMainWeatherElement = (data) => {
+  const mainData = data.days[0];
   let $fragment = d.createDocumentFragment();
   const date = getDate(data.timezone);
   $templateMainWeather.querySelector(".weather-date h1").innerHTML =
     date.dayDate;
   $templateMainWeather.querySelector(".weather-date small").innerHTML =
     date.fullDate;
-  $templateMainWeather.querySelector("img").src = getIcon(
-    data.data[0].weather.code
-  );
+  $templateMainWeather.querySelector("img").src = getIcon(mainData.icon);
   $templateMainWeather.querySelector(".degrees h1").innerHTML = `${parseInt(
-    data.data[0].temp
+    mainData.temp
   )}°C`;
   $templateMainWeather.querySelector(".degrees p").innerHTML = `${parseInt(
-    data.data[0].max_temp
-  )}°C / ${parseInt(data.data[0].min_temp)}°C`;
-  $templateMainWeather.querySelector(".location p").innerHTML = data.city_name;
-
+    mainData.tempmax
+  )}°C / ${parseInt(mainData.tempmin)}°C`;
+  $templateMainWeather.querySelector(".location p").innerHTML = locationName;
   $fragment.appendChild($templateMainWeather.cloneNode(true));
   return $fragment;
 };
